@@ -6,4 +6,7 @@ public class CreateUserDto {
     private String username;
     private String email;
     private String password;
+
+    public CreateUserDto(String username, String mail, String number) {
+    }
 }
