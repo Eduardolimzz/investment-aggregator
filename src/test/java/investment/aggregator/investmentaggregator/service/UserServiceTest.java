@@ -7,6 +7,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -31,6 +33,9 @@ public class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
+    @Captor
+    private ArgumentCaptor<User> userArgumentCaptor;
+
     @Nested
     class createUser{
         @Test
@@ -45,7 +50,7 @@ public class UserServiceTest {
                     Instant.now(),
                     null
             );
-            doReturn(user).when(userRepository).save(any());
+            doReturn(user).when(userRepository).save(userArgumentCaptor.capture());
             var input = new CreateUserDto(
                     "username",
                         "email@gmail.com",
@@ -57,6 +62,12 @@ public class UserServiceTest {
 
             //Assert:
             assertNotNull(output);
+
+            var userCaptured = userArgumentCaptor.getValue();
+
+            assertEquals(input.getUsername(), userCaptured.getUsername());
+            assertEquals(input.getEmail(), userCaptured.getEmail());
+            assertEquals(input.getPassword(), userCaptured.getPassword());
         }
 
         @Test

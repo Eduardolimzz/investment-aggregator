@@ -8,5 +8,8 @@ public class CreateUserDto {
     private String password;
 
     public CreateUserDto(String username, String mail, String number) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
     }
 }
