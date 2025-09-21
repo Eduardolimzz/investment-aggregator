@@ -1,6 +1,7 @@
 package investment.aggregator.investmentaggregator.service;
 
 import investment.aggregator.investmentaggregator.dto.CreateUserDto;
+import investment.aggregator.investmentaggregator.dto.UpdateUserDto;
 import investment.aggregator.investmentaggregator.entity.User;
 import investment.aggregator.investmentaggregator.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -41,7 +42,7 @@ public class UserServiceTest {
     private ArgumentCaptor<UUID> uuidArgumentCaptor;
 
     @Nested
-    class createUser{
+    class createUser {
         @Test
         @DisplayName("Should create a user with success")
         void shouldCreateAUserWithSuccess() {
@@ -57,8 +58,8 @@ public class UserServiceTest {
             doReturn(user).when(userRepository).save(userArgumentCaptor.capture());
             var input = new CreateUserDto(
                     "username",
-                        "email@gmail.com",
-                      "123"
+                    "email@gmail.com",
+                    "123"
             );
 
             //Act:
@@ -76,7 +77,7 @@ public class UserServiceTest {
 
         @Test
         @DisplayName("Should throw exception when error occurs")
-        void shouldThrowExceptionWhenErroOccurs(){
+        void shouldThrowExceptionWhenErroOccurs() {
 
             doThrow(new RuntimeException()).when(userRepository).save(any());
             var input = new CreateUserDto(
@@ -92,7 +93,7 @@ public class UserServiceTest {
     }
 
     @Nested
-    class getUserById{
+    class getUserById {
         @Test
         @DisplayName("Should get user by id with success when optional is present")
         void shouldGetUserByIdWithSuccessWhenOptionalIsPresent() {
@@ -130,7 +131,7 @@ public class UserServiceTest {
     }
 
     @Nested
-    class listUsers{
+    class listUsers {
 
         @Test
         @DisplayName("Should return all user with success")
@@ -153,9 +154,9 @@ public class UserServiceTest {
             assertEquals(userList.size(), output.size());
         }
     }
-    
+
     @Nested
-    class deleteById{
+    class deleteById {
         @Test
         @DisplayName("Should delete user with success when user exists")
         void shouldDeleteUserWithSuccessWhenUserExists() {
@@ -174,6 +175,7 @@ public class UserServiceTest {
             verify(userRepository, times(1)).existsById(idList.get(0));
             verify(userRepository, times(1)).deleteById(idList.get(1));
         }
+
         @Test
         @DisplayName("Should delete user when user not exists")
         void shouldDeleteUserWhenUserNotExists() {
@@ -189,6 +191,63 @@ public class UserServiceTest {
             verify(userRepository, times(1)).existsById(uuidArgumentCaptor.getValue());
 
             verify(userRepository, times(0)).deleteById(any());
+        }
+    }
+
+    @Nested
+    class updateUserById {
+        @Test
+        @DisplayName("Should update user by id when user exists and username and password is filled")
+        void shouldUpdateUserByIdWhenUserExistsAnUsernameAndPasswordIsFilled() {
+
+            var updateUserDto = new UpdateUserDto(
+                    "newusername",
+                    "new Pasword"
+            );
+            //Arrange
+            var user = new User(
+                    UUID.randomUUID(),
+                    "username",
+                    "email@gmail.com",
+                    "password",
+                    Instant.now(),
+                    null
+            );
+            doReturn(Optional.of(user)).when(userRepository).findById(uuidArgumentCaptor.capture());
+            doReturn(user).when(userRepository).save(userArgumentCaptor.capture());
+
+            userService.updateUserById(user.getUserid().toString(), updateUserDto);
+
+            assertEquals(user.getUserid(), uuidArgumentCaptor.getValue());
+
+            var userCaptured = userArgumentCaptor.getValue();
+
+            assertEquals(updateUserDto.username(), userCaptured.getUsername());
+            assertEquals(updateUserDto.password(), userCaptured.getPassword());
+
+            verify(userRepository, times(1)).findById(uuidArgumentCaptor.getValue());
+            verify(userRepository, times(1)).save(user);
+
+        }
+
+        @Test
+        @DisplayName("Should not update user by id when user not exists and username and password is filled")
+        void shouldNotUpdateUserByIdWhenUserNotExistsAnUsernameAndPasswordIsFilled() {
+
+            var updateUserDto = new UpdateUserDto(
+                    "newusername",
+                    "new Pasword"
+            );
+            var userId = UUID.randomUUID();
+            doReturn(Optional.empty()).when(userRepository).findById(uuidArgumentCaptor.capture());
+
+            userService.updateUserById(userId.toString(), updateUserDto);
+
+            assertEquals(userId, uuidArgumentCaptor.getValue());
+
+            verify(userRepository, times(1)).findById(uuidArgumentCaptor.getValue());
+            verify(userRepository, times(0)).save(any());
+
         }
     }
 }
