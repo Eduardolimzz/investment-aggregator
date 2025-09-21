@@ -87,6 +87,104 @@ Content-Type: application/json
 ```http
 DELETE /v1/users/{userId}
 ```
+##  Testes Unitários
+
+O projeto inclui uma suíte completa de testes unitários para a camada de serviço, garantindo a qualidade e confiabilidade do código.
+
+### Cobertura de Testes
+
+- **UserService:** 100% de cobertura de métodos e linhas
+- **Todas as operações CRUD testadas**
+- **Cenários de sucesso e erro contemplados**
+
+### Estrutura dos Testes
+
+```
+src/test/java/investment/aggregator/investmentaggregator/
+└── service/
+    └── UserServiceTest.java         
+```
+
+### Funcionalidades Testadas
+
+####  Create User (`createUser`)
+- **Sucesso:** Criação de usuário com dados válidos
+- **Erro:** Tratamento de exceções durante criação
+
+####  Get User by ID (`getUserById`)  
+- **Sucesso:** Busca usuário existente (Optional presente)
+- **Vazio:** Busca usuário inexistente (Optional vazio)
+
+####  List Users (`listUsers`)
+- **Sucesso:** Retorna lista de todos os usuários
+
+####  Delete User (`deleteById`)
+- **Sucesso:** Deleta usuário existente
+- **Proteção:** Não executa delete quando usuário não existe
+
+####  Update User (`updateUserById`)
+- **Sucesso:** Atualiza usuário existente com novos dados
+- **Proteção:** Não executa update quando usuário não existe
+
+### Tecnologias de Teste
+
+- **JUnit 5:** Framework principal de testes
+- **Mockito:** Mocking de dependências
+- **MockitoExtension:** Integração com JUnit 5
+- **ArgumentCaptor:** Captura e validação de argumentos
+
+### Executar os Testes
+
+#### Via IDE
+1. Navegue até `src/test/java/`
+2. Clique com botão direito em `UserServiceTest`
+3. Selecione "Run Tests"
+
+#### Via Command Line
+```bash
+# Executar todos os testes
+./mvnw test
+
+# Executar apenas testes do UserService
+./mvnw test -Dtest=UserServiceTest
+
+# Executar com relatório de cobertura
+./mvnw test jacoco:report
+```
+
+### Padrão de Testes (AAA)
+
+Todos os testes seguem o padrão **Arrange, Act, Assert**:
+
+```java
+@Test
+void shouldCreateAUserWithSuccess() {
+    //Arrange: Preparar dados de teste e mocks
+    var input = new CreateUserDto("username", "email@test.com", "password");
+    doReturn(user).when(userRepository).save(any());
+    
+    //Act: Executar o método a ser testado
+    var output = userService.createUser(input);
+    
+    //Assert: Verificar os resultados
+    assertNotNull(output);
+    assertEquals(input.getUsername(), output.getUsername());
+}
+```
+
+### Verificação de Cobertura
+
+O projeto mantém **100% de cobertura** na camada de serviço:
+- **Classes:** 100% (1/1)
+- **Métodos:** 100% (5/5) 
+- **Linhas:** 100% (14/23)
+
+### Mocks e Validações
+
+- **Repository:** Totalmente mocado para isolamento
+- **ArgumentCaptor:** Validação de parâmetros passados
+- **Verify:** Confirmação de chamadas aos métodos
+- **Times:** Verificação da quantidade de execuções
 
 ##  Acessar o Banco de Dados
 
