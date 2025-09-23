@@ -8,13 +8,14 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Data
 @Entity
-@Table(name = "tb_users")
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "tb_users")
 public class User {
     //esse atributo da nossa classe vai ser um identificador no banco de dados, userid Primary key
     @Id
@@ -35,4 +36,7 @@ public class User {
 
     @UpdateTimestamp
     private Instant updatedTimestamp;
+
+    @OneToMany(mappedBy = "user")
+    private List<Account> accounts;
 }
