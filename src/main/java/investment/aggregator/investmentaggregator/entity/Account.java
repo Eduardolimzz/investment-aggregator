@@ -20,7 +20,7 @@ public class Account {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID accountId;
 
-    @OneToOne(mappedBy = "account")
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "account")
     @PrimaryKeyJoinColumn
     private BillingAddress billingAddress;
 
