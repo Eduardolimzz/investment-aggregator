@@ -1,6 +1,6 @@
 # Investment Aggregator
 
-Um agregador de investimentos desenvolvido com Spring Boot e MySQL, fornecendo uma API REST para gerenciamento de usuários.
+Um agregador de investimentos desenvolvido com Spring Boot e MySQL, fornecendo uma API REST para gerenciamento de usuários, contas e ações.
 
 ##  Tecnologias Utilizadas
 
@@ -48,9 +48,10 @@ Execute a classe `InvestmentaggregatorApplication` na sua IDE ou via command lin
 
 ##  API Endpoints
 
+### Usuários
 Base URL: `http://localhost:8080/v1/users`
 
-### Criar Usuário
+#### Criar Usuário
 ```http
 POST /v1/users
 Content-Type: application/json
@@ -62,17 +63,17 @@ Content-Type: application/json
 }
 ```
 
-### Listar Todos os Usuários
+#### Listar Todos os Usuários
 ```http
 GET /v1/users
 ```
 
-### Buscar Usuário por ID
+#### Buscar Usuário por ID
 ```http
 GET /v1/users/{userId}
 ```
 
-### Atualizar Usuário
+#### Atualizar Usuário
 ```http
 PUT /v1/users/{userId}
 Content-Type: application/json
@@ -83,10 +84,61 @@ Content-Type: application/json
 }
 ```
 
-### Deletar Usuário
+#### Deletar Usuário
 ```http
 DELETE /v1/users/{userId}
 ```
+
+#### Criar Conta para Usuário
+```http
+POST /v1/users/{userId}/accounts
+Content-Type: application/json
+
+{
+    "description": "Conta de Investimento",
+    "street": "Rua",
+    "number": 500
+}
+```
+
+#### Listar Contas do Usuário
+```http
+GET /v1/users/{userId}/accounts
+```
+
+### Ações
+Base URL: `http://localhost:8080/v1/stocks`
+
+#### Criar Ação
+```http
+POST /v1/stocks
+Content-Type: application/json
+
+{
+    "stockId": "PETR4",
+    "description": "Petrobras PN"
+}
+```
+
+### Contas
+Base URL: `http://localhost:8080/v1/accounts`
+
+#### Associar Ação à Conta
+```http
+POST /v1/accounts/{accountId}/stocks
+Content-Type: application/json
+
+{
+    "stockId": "PETR4",
+    "quantity": 100
+}
+```
+
+#### Listar Ações da Conta
+```http
+GET /v1/accounts/{accountId}/stocks
+```
+
 ##  Testes Unitários
 
 O projeto inclui uma suíte completa de testes unitários para a camada de serviço, garantindo a qualidade e confiabilidade do código.
@@ -211,6 +263,18 @@ SHOW TABLES;
 -- Ver dados dos usuários
 SELECT * FROM tb_users;
 
+-- Ver dados das contas
+SELECT * FROM tb_accounts;
+
+-- Ver dados das ações
+SELECT * FROM tb_stock;
+
+-- Ver associações conta-ação
+SELECT * FROM tb_accounts_stocks;
+
+-- Ver endereços de cobrança
+SELECT * FROM tb_billingaddress;
+
 -- Ver estrutura da tabela
 DESCRIBE tb_users;
 ```
@@ -220,16 +284,34 @@ DESCRIBE tb_users;
 ```
 src/main/java/investment/aggregator/investmentaggregator/
 ├── controller/
-│   └── UserController.java       # Endpoints REST
+│   ├── UserController.java          # Endpoints de usuários e contas
+│   ├── StockController.java         # Endpoints de ações
+│   └── AccountController.java       # Endpoints de associação conta-ação
 ├── dto/
-│   ├── CreateUserDto.java       # DTO para criação
-│   └── UpdateUserDto.java       # DTO para atualização
+│   ├── CreateUserDto.java           # DTO para criação de usuário
+│   ├── UpdateUserDto.java           # DTO para atualização de usuário
+│   ├── CreateAccountDto.java        # DTO para criação de conta
+│   ├── AccountResponseDto.java      # DTO para resposta de conta
+│   ├── CreateStockDto.java          # DTO para criação de ação
+│   ├── AssociateAccountStockDto.java # DTO para associação conta-ação
+│   └── AccountStockResponseDto.java  # DTO para resposta de ação na conta
 ├── entity/
-│   └── User.java                # Entidade JPA
+│   ├── User.java                    # Entidade de usuário
+│   ├── Account.java                 # Entidade de conta
+│   ├── BillingAddress.java          # Entidade de endereço de cobrança
+│   ├── Stock.java                   # Entidade de ação
+│   ├── AccountStock.java            # Entidade de associação conta-ação
+│   └── AccountStockId.java          # Chave composta para conta-ação
 ├── repository/
-│   └── UserRepository.java      # Interface de acesso a dados
+│   ├── UserRepository.java          # Interface de acesso a usuários
+│   ├── AccountRepository.java       # Interface de acesso a contas
+│   ├── BillingAddressRepository.java # Interface de acesso a endereços
+│   ├── StockRepository.java         # Interface de acesso a ações
+│   └── AccountStockRepository.java   # Interface de acesso a associações
 ├── service/
-│   └── UserService.java         # Lógica de negócio
+│   ├── UserService.java             # Lógica de negócio de usuários
+│   ├── StockService.java            # Lógica de negócio de ações
+│   └── AccountService.java          # Lógica de negócio de contas
 └── InvestmentaggregatorApplication.java
 ```
 
@@ -247,9 +329,43 @@ src/main/java/investment/aggregator/investmentaggregator/
    }
    ```
 
-2. **Listar usuários:**
+2. **Criar uma conta para o usuário:**
+   - Method: `POST`
+   - URL: `http://localhost:8080/v1/users/{userId}/accounts`
+   - Body (JSON):
+   ```json
+   {
+       "description": "Conta de Investimento",
+       "street": "Rua",
+       "number": 500
+   }
+   ```
+
+3. **Criar uma ação:**
+   - Method: `POST`
+   - URL: `http://localhost:8080/v1/stocks`
+   - Body (JSON):
+   ```json
+   {
+       "stockId": "PETR4",
+       "description": "Petrobras PN"
+   }
+   ```
+
+4. **Associar ação à conta:**
+   - Method: `POST`
+   - URL: `http://localhost:8080/v1/accounts/{accountId}/stocks`
+   - Body (JSON):
+   ```json
+   {
+       "stockId": "PETR4",
+       "quantity": 100
+   }
+   ```
+
+5. **Listar ações da conta:**
    - Method: `GET`
-   - URL: `http://localhost:8080/v1/users`
+   - URL: `http://localhost:8080/v1/accounts/{accountId}/stocks`
 
 ## 🛠️ Solução de Problemas
 
@@ -273,12 +389,32 @@ Para ver logs detalhados, adicione no `application.properties`:
 logging.level.investment.aggregator=DEBUG
 ```
 
-##  Funcionalidades da Entidade User
+##  Funcionalidades das Entidades
 
+### User
 - **ID único:** Gerado automaticamente via UUID
 - **Timestamps automáticos:** Criação e atualização registradas automaticamente
-- **Validação:** Campos obrigatórios validados
+- **Relacionamento:** Um usuário pode ter várias contas
 - **Mapeamento JPA:** Tabela `tb_users` no banco `db_example`
+
+### Account
+- **ID único:** Gerado automaticamente via UUID
+- **Relacionamentos:** Pertence a um usuário, tem um endereço de cobrança, pode ter várias ações
+- **Mapeamento JPA:** Tabela `tb_accounts` no banco `db_example`
+
+### BillingAddress
+- **Relacionamento OneToOne:** Cada conta tem um endereço de cobrança
+- **Chave primária compartilhada:** Usa o mesmo ID da conta
+- **Mapeamento JPA:** Tabela `tb_billingaddress` no banco `db_example`
+
+### Stock
+- **ID manual:** Código da ação definido manualmente (ex: PETR4)
+- **Mapeamento JPA:** Tabela `tb_stock` no banco `db_example`
+
+### AccountStock
+- **Chave composta:** Combinação de account_id e stock_id
+- **Quantidade:** Armazena a quantidade de ações que a conta possui
+- **Mapeamento JPA:** Tabela `tb_accounts_stocks` no banco `db_example`
 
 ##  Contribuição
 
