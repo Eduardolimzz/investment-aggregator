@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -29,5 +30,8 @@ public class Account {
 
     @Column(name = "description")
     private String description;
+
+    @OneToMany(mappedBy = "account")
+    private List<AccountStock> accountStocks;
 
 }
